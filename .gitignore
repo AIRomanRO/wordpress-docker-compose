@@ -12,6 +12,8 @@ logs/nginx/*
 !logs/nginx/.keep
 logs/php/*
 !logs/php/.keep
+profiling/*
+!profiling/.keep
 _trash
 *.Rproj
 .idea/*
