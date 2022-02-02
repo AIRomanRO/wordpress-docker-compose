@@ -1,4 +1,10 @@
 version: '3.6'
+
+networks:
+  wordpress-default:
+    name: wordpress-default
+    external: true
+
 services:
   # Wordpress auto configuration
   # depends on wp-cli build
@@ -10,27 +16,32 @@ services:
     volumes:
       - ${WORDPRESS_DATA_DIR:-./wordpress}:/var/www/html
     working_dir: /var/www/html
+    user: "${CURRENT_UID}:${CURRENT_GID}"
     depends_on:
-      - wordpress
-      - mysql
+      - webserver
+      - database
     environment:
       # Waiting for MySQL and wordpress -------------------
-      - WAIT_HOSTS=mysql:3306,wordpress:80
-      - WAIT_BEFORE_HOSTS=${WAIT_BEFORE_HOSTS:-30}
-      - WAIT_AFTER_HOSTS=${WAIT_AFTER_HOSTS:-15}
+      - WAIT_HOSTS=database:3306,webserver:80
+      - WAIT_BEFORE_HOSTS=${WAIT_BEFORE_HOSTS:-15}
+      - WAIT_AFTER_HOSTS=${WAIT_AFTER_HOSTS:-7}
       - WAIT_HOSTS_TIMEOUT=${WAIT_HOSTS_TIMEOUT:-300}
       - WAIT_SLEEP_INTERVAL=${WAIT_SLEEP_INTERVAL:-30}
       - WAIT_HOST_CONNECT_TIMEOUT=${WAIT_HOST_CONNECT_TIMEOUT:-30}
       # Wordpress configuration -----------------------------
       - WORDPRESS_LOCALE=${WORDPRESS_LOCALE:-en_US}
       - WORDPRESS_DB_NAME=${COMPOSE_PROJECT_NAME:-wordpress}
-      - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST:-mysql}
+      - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST:-database}
       - WORDPRESS_DB_USER=${DATABASE_USER:-root}
       - WORDPRESS_DB_PASSWORD=${DATABASE_PASSWORD:-password}
       - WORDPRESS_WEBSITE_TITLE=${WORDPRESS_WEBSITE_TITLE}
       - WORDPRESS_WEBSITE_URL=${WORDPRESS_WEBSITE_URL:-"http://localhost"}
-      - WORDPRESS_WEBSITE_URL_WITHOUT_HTTP=${WORDPRESS_WEBSITE_URL:-localhost}
+      - WORDPRESS_WEBSITE_URL_WITHOUT_HTTP=${WORDPRESS_WEBSITE_URL_WITHOUT_HTTP:-localhost}
       - WORDPRESS_WEBSITE_POST_URL_STRUCTURE=${WORDPRESS_WEBSITE_POST_URL_STRUCTURE:-"/blog/%postname%/"}
       - WORDPRESS_ADMIN_USER=${WORDPRESS_ADMIN_USER:-wordpress}
       - WORDPRESS_ADMIN_PASSWORD=${WORDPRESS_ADMIN_PASSWORD:-wordpress}
       - WORDPRESS_ADMIN_EMAIL=${WORDPRESS_ADMIN_EMAIL:-"test@example.com"}
+    networks:
+      - wordpress-default
+    extra_hosts:
+      - "host-gateway.docker.internal:host-gateway"

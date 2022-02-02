@@ -1,0 +1,11 @@
+ARG imgName
+ARG labelName
+
+FROM wordpress:$imgName
+
+RUN apk add --no-cache $PHPIZE_DEPS \
+    && pecl install xdebug-3.0.3 \
+    && docker-php-ext-enable xdebug;
+
+RUN find /var/www/html -type d -exec chmod 0755 {} \;
+RUN find /var/www/html -type f -exec chmod 644 {} \;
