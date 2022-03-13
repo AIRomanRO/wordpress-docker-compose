@@ -23,8 +23,6 @@ healthcheck:
 down:
 	docker-compose down
 
-install: start healthcheck
-
 updatesiteurlvar:
 	$(eval WORDPRESS_WEBSITE_URL_WITHOUT_HTTP := $(shell sh -c "docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(COMPOSE_PROJECT_NAME)_webserver"))		
 	$(eval export WORDPRESS_WEBSITE_URL_WITHOUT_HTTP)
@@ -43,7 +41,9 @@ autoinstall: start updatesiteurlvar
 	docker-compose \
 		-f docker-compose.yml \
 		-f wp-auto-config.yml \
-		run --rm wp-auto-config
+		run --rm wp-auto-install
+
+install: start healthcheck
 
 clean: down
 	@echo "Removing related folders/files..."
